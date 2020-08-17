@@ -1,27 +1,25 @@
 from django.db.models import Count
 from django.shortcuts import render, get_object_or_404
-from django.views.generic import TemplateView, View, ListView, DetailView
+from django.views.generic import ListView, DetailView
 from .models import Specialty, Company, Vacancy
 
 
-class MainView(View):
-    # template_name = "index.html"
+class MainView(ListView):
+    template_name = "index.html"
+    model = Vacancy
 
-    def get(self, request):
-        context = {}
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context['objects'] = Specialty.objects.values().annotate(count=Count('vacancies')).order_by('-count')
         context['companies'] = Company.objects.values().annotate(count=Count('companies')).order_by('-count')
-        return render(request, "index.html", context=context)
+        return context
 
 
 class ListVacancies(ListView):
     model = Vacancy
+    context_object_name = 'objects'
     template_name = "vacancies.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['objects'] = Vacancy.objects.all()
-        return context
 
 
 class VacancyBySpecialization(ListView):
@@ -46,12 +44,10 @@ class DetailCompany(ListView):
         return context
 
 
-
-class DetailVacancies(ListView):
+class DetailVacancies(DetailView):
     model = Vacancy
+    context_object_name = 'object'
     template_name = "vacancy.html"
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['object'] = get_object_or_404(Vacancy, id=self.kwargs['id'])
-        return context
+    def get_object(self, **kwargs):
+        return get_object_or_404(Vacancy, id=self.kwargs['id'])

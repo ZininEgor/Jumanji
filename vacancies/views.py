@@ -1,5 +1,5 @@
 from django.db.models import Count
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView
 from .models import Specialty, Company, Vacancy
 
@@ -7,7 +7,6 @@ from .models import Specialty, Company, Vacancy
 class MainView(ListView):
     template_name = "index.html"
     model = Vacancy
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

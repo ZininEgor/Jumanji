@@ -130,6 +130,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+STATIC_ROOT = os.path.normpath(os.path.join(BASE_DIR, 'staticfiles'))
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
 
 #s3 bucket config

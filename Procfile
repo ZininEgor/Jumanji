@@ -1,1 +1,1 @@
-web: gunicorn Vacancies_stepik.wsgi --log-file -
+web: gunicorn stepik_tours.wsgi

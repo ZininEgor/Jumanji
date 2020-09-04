@@ -15,14 +15,34 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
-from vacancies.views import MainView, VacancyBySpecialization, ListVacancies, DetailVacancies, DetailCompany
+from Vacancies_stepik.settings import MEDIA_URL, MEDIA_ROOT
+from vacancies.views import *
 
 urlpatterns = [
     path('', MainView.as_view()),
+    path('about/', About.as_view()),
     path('admin/', admin.site.urls),
     path('vacancies/', ListVacancies.as_view()),
-    path('vacancies/<int:id>/', DetailVacancies.as_view()),
+    path('vacancies/<int:id>/', detail_vacancies),
     path('vacancies/cat/<title>/', VacancyBySpecialization.as_view()),
     path('companies/<int:id>/', DetailCompany.as_view()),
+    path('mycompany/vacancies', MyCompanyVacancyView),
+    path('mycompany/vacancies/create', create_my_vacancy),
+    path('mycompany/vacancies/<str:vacancy_id>', update_my_vacancy),
 ]
+
+urlpatterns += [
+    path('mycompany/', MyCompany, name='MyCompany'),
+    path('profile', AccountSettings, name='profile'),
+    path('logout', LogoutPage, name='logout'),
+    path('login', LoginPage, name='login'),
+    path('register/', RegisterPage, name='register'),
+    path('myresume/', ResumeEdit, name='myresume')
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

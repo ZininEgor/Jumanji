@@ -1,7 +1,165 @@
+from django.contrib import messages
 from django.db.models import Count
-from django.shortcuts import get_object_or_404
-from django.views.generic import ListView, DetailView
-from .models import Specialty, Company, Vacancy
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import ListView, View
+from .models import Specialty, Application
+from django.views.generic import CreateView
+from django.shortcuts import render
+from django.contrib.auth import authenticate, login, logout
+from .forms import *
+from django.contrib.auth.forms import UserCreationForm
+
+from django.contrib.auth.views import LoginView, LogoutView
+
+
+class About(View):
+    def get(self, request):
+
+        return render(request, 'about.html')
+
+
+def create_my_vacancy(request):
+    form = VacancyForm()
+    if request.method == 'POST':
+        form = VacancyForm(request.POST)
+        if form.is_valid():
+            Vacancy.objects.create(title=request.POST.get('title'),
+                                   specialty_id=request.POST.get('specialty'),
+                                   company=Company.objects.get(owner=request.user),
+                                   skills=request.POST.get('skills'),
+                                   description=request.POST.get('description'),
+                                   salary_min=request.POST.get('salary_min'),
+                                   salary_max=request.POST.get('salary_max'), )
+            return redirect('/mycompany/vacancies')
+    context = {'form': form}
+    return render(request, 'vacancy-create.html', context=context)
+
+
+def update_my_vacancy(request, vacancy_id):
+    vacancy = Vacancy.objects.get(id=vacancy_id)
+    form = VacancyForm(instance=vacancy)
+    if 'update' in request.POST:
+        form = VacancyForm(request.POST, instance=vacancy)
+        if form.is_valid():
+            messages.info(request, 'Ваша вакансия обновлена!')
+            form.save()
+    elif 'delete' in request.POST:
+        vacancy = Vacancy.objects.get(id=vacancy_id)
+        vacancy.delete()
+        return redirect('/mycompany/vacancies')
+
+    context = {'form': form, 'applications': Vacancy.objects.get(id=vacancy_id).applications.all()}
+    return render(request, 'vacancy-edit.html', context=context)
+
+
+def MyCompanyVacancyView(request):
+    template_name = 'vacancy-list.html'
+    context = {'objects': Vacancy.objects.filter(company__owner=request.user)}
+    return render(request, template_name, context=context)
+
+
+def MyCompany(request):
+    if not Company.objects.filter(owner=request.user):
+        if request.method == 'POST':
+            Company.objects.create(owner=request.user)
+            return render(request, 'company-edit.html')
+        else:
+            return render(request, 'company-create.html')
+    else:
+        company = Company.objects.get(owner=request.user)
+        form = MyCompanyForm(instance=company)
+        if request.method == 'POST':
+            form = MyCompanyForm(request.POST, request.FILES, instance=company)
+            if form.is_valid():
+                messages.info(request, 'Информация о вашей компании успешно обновлена!')
+                form.save()
+
+        context = {'form': form, 'logo': Company.objects.get(owner=request.user).logo}
+        return render(request, 'company-edit.html', context)
+
+
+def AccountSettings(request):
+    user = request.user.resume
+    form = ProfileForm(instance=user)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+
+    context = {'form': form}
+    return render(request, 'profile.html', context)
+
+
+def ResumeEdit(request):
+    user = request.user.resume
+    form = ResumeForm(instance=user)
+    if request.method == 'POST':
+        form = ResumeForm(request.POST, instance=user)
+        if form.is_valid():
+            messages.info(request, 'Ваше резюме обновлено!')
+            form.save()
+
+    context = {'form': form}
+    return render(request, 'resume-edit.html', context)
+
+
+def RegisterPage(request):
+    if request.user.is_authenticated:
+        return redirect('/')
+    else:
+        form = CreateUserForm()
+        if request.method == 'POST':
+            form = CreateUserForm(request.POST)
+            if form.is_valid():
+                user = form.save()
+                username = form.cleaned_data.get('username')
+                Resume.objects.create(
+                    user=user,
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                )
+                messages.success(request, 'Аккаунт был создан для ' + username)
+                return redirect('login')
+        context = {'form': form}
+        return render(request, 'register.html', context)
+
+
+def LoginPage(request):
+    if request.user.is_authenticated:
+        return redirect('/')
+    else:
+        if request.method == 'POST':
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user=user)
+                return redirect('/')
+            else:
+                messages.info(request, 'Неверный логин или пароль')
+
+        context = {}
+        return render(request, 'login.html', context)
+
+
+def LogoutPage(request):
+    logout(request)
+    return redirect('/')
+
+
+class MyLoginView(LoginView):
+    redirect_authenticated_user = True
+    template_name = 'login.html'
+
+
+class MyLogoutView(LogoutView):
+    redirect_authenticated_user = False
+
+
+class MySignupView(CreateView):
+    form_class = UserCreationForm
+    success_url = 'login'
+    template_name = 'register.html'
 
 
 class MainView(ListView):
@@ -10,8 +168,8 @@ class MainView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['objects'] = Specialty.objects.values().annotate(count=Count('vacancies')).order_by('-count')
-        context['companies'] = Company.objects.values().annotate(count=Count('companies')).order_by('-count')
+        context['objects'] = Specialty.objects.annotate(count=Count('vacancies')).order_by('-count')
+        context['companies'] = Company.objects.annotate(count=Count('companies')).order_by('-count')
         return context
 
 
@@ -43,10 +201,17 @@ class DetailCompany(ListView):
         return context
 
 
-class DetailVacancies(DetailView):
-    model = Vacancy
-    context_object_name = 'object'
-    template_name = "vacancy.html"
+def detail_vacancies(request, id):
+    context = {'object': get_object_or_404(Vacancy, id=id)}
+    if request.user.is_authenticated:
+        form = ResumeForm(instance=request.user.resume)
+        if request.method == 'POST':
+            Application.objects.create(written_username=request.user.username,
+                                       written_phone=request.user.resume.phone,
+                                       written_cover_letter=request.user.resume.education,
+                                       vacancy=get_object_or_404(Vacancy, id=id),
+                                       user=request.user)
+            return render(request, template_name='sent.html')
+        context = {'object': get_object_or_404(Vacancy, id=id), 'form': form}
 
-    def get_object(self, **kwargs):
-        return get_object_or_404(Vacancy, id=self.kwargs['id'])
+    return render(request, 'vacancy.html', context=context)

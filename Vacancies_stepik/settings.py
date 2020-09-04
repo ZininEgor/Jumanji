@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -25,8 +24,7 @@ SECRET_KEY = '292&qsne+7pl1u#h03@13**@tt^0debpa=2)mb$ue_*k@q+^+4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['jumanji-vanacies.herokuapp.com/', '127.0.0.1']
 
 # Application definition
 
@@ -38,6 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'vacancies.apps.VacanciesConfig',
+    'crispy_forms',
+    'storages',
+
 ]
 
 MIDDLEWARE = [
@@ -71,17 +72,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Vacancies_stepik.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'demo_1',
+        'USER': 'ZininEgor',
+        'PASSWORD': 'E2105gor',
+        'HOST': 'database-1.ckeqpre8lkjr.us-east-2.rds.amazonaws.com',
+        'PORT': '5432',
+
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -101,7 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -115,8 +118,27 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+
 STATIC_URL = '/static/'
+
+MEDIA_URL = '/images/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
+
+#s3 bucket config
+AWS_ACCESS_KEY_ID = 'AKIAQGW32DSHGB6BR55S'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'zininegor-crm1-bucket'
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_S3_HOST = "s3.eu-west-2.amazonaws.com"
+AWS_S3_REGION_NAME="eu-west-2"
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

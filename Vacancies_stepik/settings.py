@@ -145,13 +145,13 @@ STATIC_ROOT = os.path.join(PROJECT_DIR, 'staticfiles')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
 
-# #s3 bucket config
-# AWS_ACCESS_KEY_ID = 'AKIAQGW32DSHGB6BR55S'
-# AWS_SECRET_ACCESS_KEY = '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'
-# AWS_STORAGE_BUCKET_NAME = 'zininegor-crm1-bucket'
-# AWS_S3_FILE_OVERWRITE = False
-# AWS_DEFAULT_ACL = None
-# AWS_S3_HOST = "s3.eu-west-2.amazonaws.com"
-# AWS_S3_REGION_NAME="eu-west-2"
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+#s3 bucket config
+AWS_ACCESS_KEY_ID = 'AKIAQGW32DSHGB6BR55S'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'zininegor-crm1-bucket'
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_S3_HOST = "s3.eu-west-2.amazonaws.com"
+AWS_S3_REGION_NAME="eu-west-2"
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

@@ -12,9 +12,19 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.views import LoginView, LogoutView
 
 
+class CompanyListView(ListView):
+    model = Company
+    template_name = 'company_list.html'
+    context_object_name = 'objects'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # context['objects']
+        return context
+
+
 class About(View):
     def get(self, request):
-
         return render(request, 'about.html')
 
 
@@ -169,7 +179,7 @@ class MainView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['objects'] = Specialty.objects.annotate(count=Count('vacancies')).order_by('-count')
-        context['companies'] = Company.objects.annotate(count=Count('companies')).order_by('-count')
+        context['companies'] = Company.objects.annotate(count=Count('vacancies')).order_by('-count')
         return context
 
 
@@ -215,3 +225,10 @@ def detail_vacancies(request, id):
         context = {'object': get_object_or_404(Vacancy, id=id), 'form': form}
 
     return render(request, 'vacancy.html', context=context)
+
+def custom_handler404(request, exception):
+    return render(request, '404.html', status=404)
+
+
+def custom_handler500(request):
+    return render(request, '500.html', status=500)

@@ -1,6 +1,4 @@
 from django import forms
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Resume, Company, Vacancy
@@ -33,9 +31,9 @@ class MyCompanyForm(ModelForm):
         fields = ['name', 'logo', 'location', 'description', 'employee_count']
 
 
-class VacancyForm(forms.Form):
+class VacancyForm(forms.ModelForm):
     class Meta:
         model = Vacancy
-        exclude = ['published_at', 'company', 'published_at']
+        exclude = ['published_at','company', 'published_at']
 
 

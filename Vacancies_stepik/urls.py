@@ -21,6 +21,8 @@ from django.conf.urls.static import static
 from Vacancies_stepik.settings import MEDIA_URL, MEDIA_ROOT
 from vacancies.views import *
 
+handler404 = custom_handler404
+handler500 = custom_handler500
 urlpatterns = [
     path('', MainView.as_view()),
     path('about/', About.as_view()),
@@ -35,6 +37,7 @@ urlpatterns = [
 ]
 
 urlpatterns += [
+    path('companies/', CompanyListView.as_view()),
     path('mycompany/', MyCompany, name='MyCompany'),
     path('profile', AccountSettings, name='profile'),
     path('logout', LogoutPage, name='logout'),

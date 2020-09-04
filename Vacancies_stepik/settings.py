@@ -75,17 +75,27 @@ WSGI_APPLICATION = 'Vacancies_stepik.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'demo_1',
+#         'USER': 'ZininEgor',
+#         'PASSWORD': 'E2105gor',
+#         'HOST': 'database-1.ckeqpre8lkjr.us-east-2.rds.amazonaws.com',
+#         'PORT': '5432',
+#
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'demo_1',
-        'USER': 'ZininEgor',
-        'PASSWORD': 'E2105gor',
-        'HOST': 'database-1.ckeqpre8lkjr.us-east-2.rds.amazonaws.com',
-        'PORT': '5432',
-
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# import dj_database_url
+# db_from_env = dj_database_url.config(conn_max_age=600)
+# DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -130,19 +140,15 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-STATIC_ROOT = os.path.normpath(os.path.join(BASE_DIR, 'staticfiles'))
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
 
-#s3 bucket config
-AWS_ACCESS_KEY_ID = 'AKIAQGW32DSHGB6BR55S'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'zininegor-crm1-bucket'
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-AWS_S3_HOST = "s3.eu-west-2.amazonaws.com"
-AWS_S3_REGION_NAME="eu-west-2"
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# #s3 bucket config
+# AWS_ACCESS_KEY_ID = 'AKIAQGW32DSHGB6BR55S'
+# AWS_SECRET_ACCESS_KEY = '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'
+# AWS_STORAGE_BUCKET_NAME = 'zininegor-crm1-bucket'
+# AWS_S3_FILE_OVERWRITE = False
+# AWS_DEFAULT_ACL = None
+# AWS_S3_HOST = "s3.eu-west-2.amazonaws.com"
+# AWS_S3_REGION_NAME="eu-west-2"
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

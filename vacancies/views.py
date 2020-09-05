@@ -8,20 +8,28 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from .forms import *
 from django.contrib.auth.forms import UserCreationForm
-
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.postgres.search import SearchVector
+
+
+def SearchView(request):
+    template_name = 'search.html'
+    q = request.GET.get('q','')
+    results = Vacancy.objects.all()
+    if q:
+        results = Vacancy.objects.annotate(
+            search=SearchVector('title', 'specialty', 'company', 'skills', 'description')
+        ).filter(search=q)
+        print(results)
+        return render(request, template_name, {'results': results, 'query': q})
+    return render(request, template_name, {'results': results})
 
 
 class CompanyListView(ListView):
     model = Company
     template_name = 'company_list.html'
     context_object_name = 'objects'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # context['objects']
-        return context
 
 
 class About(View):
@@ -101,6 +109,7 @@ def AccountSettings(request):
     return render(request, 'profile.html', context)
 
 
+@login_required
 def ResumeEdit(request):
     user = request.user.resume
     form = ResumeForm(instance=user)
@@ -227,9 +236,15 @@ def detail_vacancies(request, id):
 
     return render(request, 'vacancy.html', context=context)
 
+
 def custom_handler404(request, exception):
     return render(request, '404.html', status=404)
 
 
 def custom_handler500(request):
     return render(request, '500.html', status=500)
+
+# school_set = School.objects.filter(female=True)
+# if school_set:
+#     for school in school_set:
+#         print(school)

@@ -34,6 +34,7 @@ urlpatterns = [
     path('mycompany/vacancies', MyCompanyVacancyView),
     path('mycompany/vacancies/create', create_my_vacancy),
     path('mycompany/vacancies/<str:vacancy_id>', update_my_vacancy),
+    path('search/', SearchView),
 ]
 
 urlpatterns += [

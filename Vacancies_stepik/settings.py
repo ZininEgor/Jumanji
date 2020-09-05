@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'vacancies.apps.VacanciesConfig',
     'crispy_forms',
-    'haystack',
     'storages',
 
 ]
@@ -76,7 +75,7 @@ WSGI_APPLICATION = 'Vacancies_stepik.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-#
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',

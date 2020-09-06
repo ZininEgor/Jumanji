@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.db.models import Count
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import ListView, View
 from .models import Specialty, Application
@@ -21,7 +22,6 @@ def SearchView(request):
         results = Vacancy.objects.annotate(
             search=SearchVector('title', 'specialty', 'company', 'skills', 'description')
         ).filter(search=q)
-        print(results)
         return render(request, template_name, {'results': results, 'query': q})
     return render(request, template_name, {'results': results})
 
@@ -55,20 +55,23 @@ def create_my_vacancy(request):
 
 
 def update_my_vacancy(request, vacancy_id):
-    vacancy = Vacancy.objects.get(id=vacancy_id)
-    form = VacancyForm(instance=vacancy)
-    if 'update' in request.POST:
-        form = VacancyForm(request.POST, instance=vacancy)
-        if form.is_valid():
-            messages.info(request, 'Ваша вакансия обновлена!')
-            form.save()
-    elif 'delete' in request.POST:
+    try:
         vacancy = Vacancy.objects.get(id=vacancy_id)
-        vacancy.delete()
-        return redirect('/mycompany/vacancies')
+        form = VacancyForm(instance=vacancy)
+        if 'update' in request.POST:
+            form = VacancyForm(request.POST, instance=vacancy)
+            if form.is_valid():
+                messages.info(request, 'Ваша вакансия обновлена!')
+                form.save()
+        elif 'delete' in request.POST:
+            vacancy = Vacancy.objects.get(id=vacancy_id)
+            vacancy.delete()
+            return redirect('/mycompany/vacancies')
 
-    context = {'form': form, 'applications': Vacancy.objects.get(id=vacancy_id).applications.all()}
-    return render(request, 'vacancy-edit.html', context=context)
+        context = {'form': form, 'applications': Vacancy.objects.get(id=vacancy_id).applications.all()}
+        return render(request, 'vacancy-edit.html', context=context)
+    except:
+        return Http404()
 
 
 def MyCompanyVacancyView(request):

@@ -5,6 +5,31 @@
   <meta charset="UTF-8">
   <title>Вакансии | Джуманджи</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+        .card {
+    cursor: pointer;
+  display:-webkit-box;
+  display:-ms-flexbox;
+  display:flex;
+  -webkit-box-orient:vertical;
+  -webkit-box-direction:normal;
+  -ms-flex-direction:column;
+  flex-direction:column;
+  position:relative;
+  -webkit-transition:all 0.4s cubic-bezier(0.645, 0.045, 0.355, 1);
+  -o-transition:all 0.4s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition:all 0.4s cubic-bezier(0.645, 0.045, 0.355, 1);
+  border-radius:16px;
+  overflow:hidden;
+  -webkit-box-shadow:  15px 15px 27px #e1e1e3, -15px -15px 27px #ffffff;
+  box-shadow:  15px 15px 27px #e1e1e3, -15px -15px 27px #ffffff;
+}
+
+.card:hover {
+  box-shadow: 5px 5px 30px 15px rgba(0,0,0,0.25);
+    border-radius: 15px;
+}
+    </style>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
     {% extends 'wrapper.html' %}
@@ -15,7 +40,7 @@
         <h1 class="h1 text-center mt-5 mb-4">Поиск вакансий</h1>
 
         <div class="row">
-            <div class="col-md-7 col-lg-5 col-xl-4 col-sm-8 mx-auto">
+            <div class="col-md-7 col-lg-5 col-xl-5 col-sm-8 mx-auto">
 
             <form class="form-inline sm-form mr-auto mb-4" method="get" action="">
                 <input class="form-control mr-sm-2" name="q" type="text" value="{{ request.GET.q }}"
@@ -27,12 +52,15 @@
         </div>
 
 
-      <p class="text-center pt-1">Найдено {{ result.count }} вакансий</p>
+      <p class="text-center pt-1">Найдено {{ result.all.count }} вакансий</p>
         {% for object in results %}
-      <div class="row mt-5">
-        <div class="col-12 col-lg-8 offset-lg-2 m-auto">
-          <div class="card mb-4">
-            <div class="card-body px-4">
+      <div  class="row mt-2">
+        <div class="col-12 py-4 my-2 col-lg-8 offset-lg-2 m-auto">
+                {% if not forloop.counter|divisibleby:"2" %}
+                    <div data-aos="fade-right" class="card pt-4 mt-2 px-4">
+                {% else %}
+                    <div data-aos="fade-left" class="card pt-4 mt-2 px-4">
+                {% endif %}
               <div class="row">
                 <div class="col-12 col-md-8 col-lg-9">
                   <h2 class="h2 pb-2">{{ object.title }}</h2>

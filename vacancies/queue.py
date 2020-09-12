@@ -1,7 +1,9 @@
 import logging
 from multiprocessing import Process, Queue
 logger = logging.getLogger(__name__)
+from queue import Empty
 from time import sleep
+
 
 class SendMail:
     def __init__(self):
@@ -10,13 +12,12 @@ class SendMail:
 
     def process_sent(self, q):
         while True:
-            sleep(2)
             try:
                 task = q.get()
                 task.send()
                 print(task)
                 logger.info('Письмо отправлено')
-            except q.Empty:
+            except q.queue.Empty:
                 print('письма закончились')
 
     def new_send_email(self, email):

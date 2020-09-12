@@ -38,7 +38,7 @@ def send_letter(useras, resumesa, queryset):
     for resume in queryset:
         resume.token = account_activation_token.make_token(resume.user)
         resume.save()
-        VERIFY_URL = (f'http://127.0.0.1:8000/{resume.user.resume.token}/verify/')
+        VERIFY_URL = (f'https://jumanji-vacancies.herokuapp.com/{resume.user.resume.token}/verify/')
         resume.user.save()
         html = loader.render_to_string('EmailHTML.html', {
             'user': resume.user,

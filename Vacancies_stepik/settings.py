@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = '292&qsne+7pl1u#h03@13**@tt^0debpa=2)mb$ue_*k@q+^+4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['jumanji-vacancies.herokuapp.com', '127.0.0.1']
 
@@ -43,13 +43,14 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'Vacancies_stepik.Middleware.SimpleMiddleware',
 ]
 
 ROOT_URLCONF = 'Vacancies_stepik.urls'
@@ -94,9 +95,9 @@ DATABASES = {
     }
 }
 
-import dj_database_url
-db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES['default'].update(db_from_env)
+# import dj_database_url
+# db_from_env = dj_database_url.config(conn_max_age=600)
+# DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -145,7 +146,7 @@ STATIC_ROOT = os.path.join(PROJECT_DIR, 'staticfiles')
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
 
-#s3 bucket config
+# s3 bucket config
 AWS_ACCESS_KEY_ID = 'AKIAQGW32DSHGB6BR55S'
 AWS_SECRET_ACCESS_KEY = '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'
 AWS_STORAGE_BUCKET_NAME = 'zininegor-bucket'
@@ -154,3 +155,40 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'freddie7789123456@gmail.com'
+EMAIL_HOST_PASSWORD = 'E2105gor'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'myformatter': {
+            'format': '{levelname} {asctime} {module} {process:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'log.log',
+            'formatter': 'myformatter',
+        },
+    },
+    'loggers': {
+        'vacancies': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True
+        },
+        'Vacancies_stepik': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True
+        },
+    }
+}

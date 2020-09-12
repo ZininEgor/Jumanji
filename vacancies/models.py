@@ -1,9 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+User._meta.get_field('email')._unique = True
+User._meta.get_field('email').blank = False
+User._meta.get_field('email').null = False
+
 
 class Company(models.Model):
-    name = models.CharField(max_length=32, null=True, blank=True)
+    name = models.CharField(max_length=32, null=True, blank=True, db_index=True)
     logo = models.ImageField(default='company.png', null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, )
     location = models.CharField(max_length=32, null=True)
@@ -16,7 +20,7 @@ class Company(models.Model):
 
 class Specialty(models.Model):
     code = models.CharField(max_length=32)
-    title = models.CharField(max_length=32)
+    title = models.CharField(max_length=32, db_index=True)
     picture = models.ImageField()
 
     def __str__(self):
@@ -24,10 +28,10 @@ class Specialty(models.Model):
 
 
 class Vacancy(models.Model):
-    title = models.CharField(max_length=124)
+    title = models.CharField(max_length=124, db_index=True)
     specialty = models.ForeignKey(Specialty, on_delete=models.CASCADE, related_name='vacancies')
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='vacancies')
-    skills = models.CharField(max_length=124)
+    skills = models.CharField(max_length=124, db_index=True)
     description = models.TextField()
     salary_min = models.IntegerField()
     salary_max = models.IntegerField()
@@ -64,6 +68,8 @@ class GradeModel(models.Model):
 
 
 class Resume(models.Model):
+    verified = models.BooleanField(default=False)
+    token = models.TextField(default='')
     user = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
     profile_pic = models.ImageField(default="check.png", null=True, blank=True)
     first_name = models.CharField(max_length=32, null=True)

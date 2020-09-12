@@ -1,7 +1,14 @@
+import datetime
+from multiprocessing import Process
+from django.core.mail import send_mail
+from django.core.mail import EmailMessage
+from .queue import SendMail
 from django.contrib import messages
 from django.db.models import Count
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
+from django.template import loader
+from django.urls import reverse_lazy
 from django.views.generic import ListView, View
 from .models import Specialty, Application
 from django.views.generic import CreateView
@@ -12,15 +19,19 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.postgres.search import SearchVector
+from .token import account_activation_token
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def SearchView(request):
     template_name = 'search.html'
-    q = request.GET.get('q','')
+    q = request.GET.get('q', '')
     results = Vacancy.objects.all()
     if q:
         results = Vacancy.objects.annotate(
-            search=SearchVector('title', 'specialty', 'company', 'skills', 'description')
+            search=SearchVector('title', 'specialty__title', 'company__name', 'skills')
         ).filter(search=q)
         return render(request, template_name, {'results': results, 'query': q})
     return render(request, template_name, {'results': results})
@@ -55,23 +66,23 @@ def create_my_vacancy(request):
 
 
 def update_my_vacancy(request, vacancy_id):
-    try:
+    vacancy = Vacancy.objects.filter(id=vacancy_id).first()
+    if vacancy == None:
+        logger.warning('Запрос несуществующей вакансии!')
+        raise Http404
+    form = VacancyForm(instance=vacancy)
+    if 'update' in request.POST:
+        form = VacancyForm(request.POST, instance=vacancy)
+        if form.is_valid():
+            messages.info(request, 'Ваша вакансия обновлена!')
+            form.save()
+    elif 'delete' in request.POST:
         vacancy = Vacancy.objects.get(id=vacancy_id)
-        form = VacancyForm(instance=vacancy)
-        if 'update' in request.POST:
-            form = VacancyForm(request.POST, instance=vacancy)
-            if form.is_valid():
-                messages.info(request, 'Ваша вакансия обновлена!')
-                form.save()
-        elif 'delete' in request.POST:
-            vacancy = Vacancy.objects.get(id=vacancy_id)
-            vacancy.delete()
-            return redirect('/mycompany/vacancies')
+        vacancy.delete()
+        return redirect('/mycompany/vacancies')
 
-        context = {'form': form, 'applications': Vacancy.objects.get(id=vacancy_id).applications.all()}
-        return render(request, 'vacancy-edit.html', context=context)
-    except:
-        return Http404()
+    context = {'form': form, 'applications': Vacancy.objects.get(id=vacancy_id).applications.all()}
+    return render(request, 'vacancy-edit.html', context=context)
 
 
 def MyCompanyVacancyView(request):
@@ -136,15 +147,41 @@ def RegisterPage(request):
             if form.is_valid():
                 user = form.save()
                 username = form.cleaned_data.get('username')
-                Resume.objects.create(
+                resume = Resume.objects.create(
                     user=user,
                     first_name=user.first_name,
                     last_name=user.last_name,
                 )
+                resume.save()
                 messages.success(request, 'Аккаунт был создан для ' + username)
-                return redirect('login')
+                verify_letter(user=user, resume=resume)
+                return HttpResponseRedirect(reverse_lazy('login'))
         context = {'form': form}
         return render(request, 'register.html', context)
+
+
+ad = SendMail()
+
+
+def verify_letter(user, resume):
+    resume.token = account_activation_token.make_token(user)
+    resume.save()
+    VERIFY_URL = (f'http://127.0.0.1:8000/{user.resume.token}/verify/')
+    user.save()
+    html = loader.render_to_string('EmailHTML.html', {
+        'user': user,
+        'url': VERIFY_URL
+    })
+    mail = EmailMessage("Письмо подтверждения", html, to=[f'{user.email}'])
+    ad.new_send_email(email=mail)
+
+
+def verify(request, token):
+    user = User.objects.get(resume__token=token)
+    if account_activation_token.check_token(user, token):
+        user.resume.verified = True
+        user.resume.save()
+    return redirect('MainPage')
 
 
 def LoginPage(request):
@@ -156,8 +193,11 @@ def LoginPage(request):
             password = request.POST.get('password')
             user = authenticate(request, username=username, password=password)
             if user is not None:
+                if not user.resume.verified:
+                    messages.info(request, 'Ваш аккаунт не активирован, проверьте вашу почту !')
+                    return render(request, 'login.html')
                 login(request, user=user)
-                return redirect('/')
+                return HttpResponseRedirect(reverse_lazy('MainPage'))
             else:
                 messages.info(request, 'Неверный логин или пароль')
 
@@ -246,8 +286,3 @@ def custom_handler404(request, exception):
 
 def custom_handler500(request):
     return render(request, '500.html', status=500)
-
-# school_set = School.objects.filter(female=True)
-# if school_set:
-#     for school in school_set:
-#         print(school)

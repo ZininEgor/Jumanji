@@ -24,7 +24,7 @@ from vacancies.views import *
 handler404 = custom_handler404
 handler500 = custom_handler500
 urlpatterns = [
-    path('', MainView.as_view()),
+    path('', MainView.as_view(), name='MainPage' ),
     path('about/', About.as_view()),
     path('admin/', admin.site.urls),
     path('vacancies/', ListVacancies.as_view()),
@@ -44,7 +44,8 @@ urlpatterns += [
     path('logout', LogoutPage, name='logout'),
     path('login', LoginPage, name='login'),
     path('register/', RegisterPage, name='register'),
-    path('myresume/', ResumeEdit, name='myresume')
+    path('myresume/', ResumeEdit, name='myresume'),
+    path('<token>/verify/', verify, name='verify'),
 ]
 
 if settings.DEBUG:

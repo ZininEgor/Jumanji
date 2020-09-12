@@ -166,7 +166,7 @@ ad = SendMail()
 def verify_letter(user, resume):
     resume.token = account_activation_token.make_token(user)
     resume.save()
-    VERIFY_URL = (f'http://127.0.0.1:8000/{user.resume.token}/verify/')
+    VERIFY_URL = (f'http://jumanji-vacancies.herokuapp.com//{user.resume.token}/verify/')
     user.save()
     html = loader.render_to_string('EmailHTML.html', {
         'user': user,

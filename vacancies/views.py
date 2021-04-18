@@ -151,37 +151,13 @@ def RegisterPage(request):
                     user=user,
                     first_name=user.first_name,
                     last_name=user.last_name,
+                    verified=True,
                 )
                 resume.save()
                 messages.success(request, 'Аккаунт был создан для ' + username)
-                verify_letter(user=user, resume=resume)
                 return HttpResponseRedirect(reverse_lazy('login'))
         context = {'form': form}
         return render(request, 'register.html', context)
-
-
-ad = SendMail()
-
-
-def verify_letter(user, resume):
-    resume.token = account_activation_token.make_token(user)
-    resume.save()
-    VERIFY_URL = (f'http://jumanji-vacancies.herokuapp.com//{user.resume.token}/verify/')
-    user.save()
-    html = loader.render_to_string('EmailHTML.html', {
-        'user': user,
-        'url': VERIFY_URL
-    })
-    mail = EmailMessage("Письмо подтверждения", html, to=[f'{user.email}'])
-    ad.new_send_email(email=mail)
-
-
-def verify(request, token):
-    user = User.objects.get(resume__token=token)
-    if account_activation_token.check_token(user, token):
-        user.resume.verified = True
-        user.resume.save()
-    return redirect('MainPage')
 
 
 def LoginPage(request):
